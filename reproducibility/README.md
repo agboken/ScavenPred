@@ -1,36 +1,77 @@
-# ScavenPred and ACE-iPred reproducibility materials
+# ScavenPred / ACE-iPred — Public reproducibility release
 
-These files support the revised ScavenPred/ACE-iPred manuscript submitted to *Bioinformatics Advances*.
+**Status (10 November 2026):** Research datasets, corrected training-only ScavenPred feature-selection code, frozen Random Forest reproduction code, model configurations, independent-test prediction outputs and verification records are publicly available here.
 
-## Public code inventory
+## 1. Reproduce from a fresh clone
 
-- [Original ScavenPred development notebook](../Scavenpred.ipynb): the historical development notebook already in this public repository.
-- [ScavenPred complete analysis notebook](notebooks/ScavenPred_complete_training_and_analysis.ipynb): displays the saved data-curation, training-only screening, VIF, wrapper-selection, tuning, held-out evaluation and SHAP results in the research reproducibility package. This **is not** an independently executable implementation of every feature-selection step.
-- [ACE-iPred complete training and analysis notebook](notebooks/ACE_iPred_complete_training_and_analysis.ipynb): code for fitting and evaluating the frozen Random Forest using the cleaned feature matrices and independent-test dataset from the research package.
+```bash
+git clone https://github.com/agboken/ScavenPred.git
+cd ScavenPred
+python -m pip install -r reproducibility/requirements.txt
+python reproducibility/scripts/restore_data.py
+python reproducibility/scripts/reproduce_selection.py --out scavenpred_feature_selection.json
+python reproducibility/scripts/reproduce_models.py --output reproduced_results
+```
 
-The two newer notebooks were copied from the research archive with execution outputs removed to keep the code legible. Historical provenance and results should be distinguished from a fresh successful rerun.
+The complete training-only five-fold wrapper takes longer than the model prediction check. On resource-limited hardware, set `OPENBLAS_NUM_THREADS=1` before running the feature-selection script.
 
-## Model configurations
+The **optional** independent nested-CV audit (a different experimental method, not the original manuscript wrapper) is:
 
-ScavenPred final descriptors: `E5`, `ProtFP3`, `BLOSUM6`, `BLOSUM3`, `Z3`.
+```bash
+python reproducibility/scripts/nested_feature_selection.py --output nested_cv_results.json
+```
 
-ACE-iPred final descriptors: `BLOSUM4`, `BLOSUM1`, `KF5`, `VHSE2`, `BLOSUM10`, `SVGER2`, `SVGER3`, `ProtFP7`, `SVGER4`, `MSWHIM3`.
+## 2. Public datasets and provenance
 
-## Data and verification status
+The public `data/` folder contains:
 
-**Incomplete public reproduction (as of 10 November 2026):** The versioned full data/outputs archive contains training and independent-test feature matrices, cleaned/overlap-audited datasets, univariate screening, VIF and wrapper-selection tables, hyperparameter optimisation, SHAP and evaluation reports. The archive has **not yet been fully uploaded to this public repository**. These notebooks depend on those files and cannot yet independently reproduce the entire analysis from a clean clone.
+- `ScavenPred_ACEiPred_dataset_bundle.tar.gz.b64` — compressed CSV archive (SHA-256: `5361826554c55de3f0f05b725f6c86eaa0d1c701a985728b28366fc12d6fb6bc`).
+- `scavenpred_test_256_features.csv.gz.b64` — full independent-test descriptor matrix, packaged separately.
 
-In particular, the saved selection tables are not a substitute for executable, fold-contained feature-selection scripts. Reproduction of the manuscript's leakage-control claims will require those corrected scripts and a fresh-run audit.
+The restoration script verifies the archived checksum, decodes the compressed files and exports 16 normal CSV files to `reproducibility/data/restored/`. The public archive includes finalized training matrices and labels, test labels, ScavenPred screening / correlation / VIF / wrapper / hyperparameter results, and saved independent-test predictions.
 
-Do **not** interpret any published notebook as proof that leakage is eliminated without independently rerunning its preprocessing, feature-selection and evaluation pipeline.
+No data are downloaded from the private PepSilico repository. The frozen evaluation scripts use the research datasets supplied here.
 
-## Public web predictors
+## 3. Training-only feature-selection reproduction
 
-- [ScavenPred](https://pepsilico.com/tools/scavenpred/)
-- [ACE-iPred](https://pepsilico.com/tools/ace-ipred/)
+`scripts/reproduce_selection.py` operates **only on the 1,648-peptide ScavenPred training matrix** and does not read the independent-test set. It independently implements:
 
-These prediction services do not substitute for independent experimental reproduction.
+1. Welch unpaired t-tests (`p < 0.05`), reducing 88 descriptors to 62.
+2. Greedy class-signal-ordered correlation filtering (`|r| < 0.70`), retaining 32 descriptors.
+3. Iterative VIF filtering (`VIF < 10`) with a weaker-class-correlation tie-break, retaining 14.
+4. Forward selection by mean MCC from stratified five-fold RF cross-validation (100 trees, max depth 7, shuffle=True, seed=42). Selected descriptors: **E5, ProtFP3, BLOSUM6, BLOSUM3 and Z3**.
 
-## Research separation and intellectual property
+The six-step MCC trace matches the archived selection results, including the sixth candidate being rejected. See `verification/feature_selection_verification.json`. These *training CV selection scores* should not be represented as independent-test performance or as an unbiased nested-CV estimate.
 
-SAPIEN-Pep and SIPPAD are a separate protected research programme and are not included in this research release.
+For a strictly fold-contained *alternative* feature-selection assessment, `scripts/nested_feature_selection.py` fits its selector and tunes hyperparameters inside training partitions of outer CV folds, and does not access the independent-test data.
+
+## 4. Frozen-model reproduction and independent evaluation
+
+`scripts/reproduce_models.py` reads only published training and independent-test CSVs, verifies no exact train/test sequence overlap and uses the fixed feature subsets.
+
+| Model | Training peptides | Independent test | Accuracy | MCC | ROC AUC | TN / FP / FN / TP |
+|---|---:|---:|---:|---:|---:|---|
+| ScavenPred (1,000 trees, depth 7) | 1,648 | 256 | 0.765625 | 0.377006 | 0.823609 | 33 / 22 / 38 / 163 |
+| ACE-iPred (200 trees, depth 10, leaf 4, balanced) | 1,933 | 253 | 0.727273 | 0.416194 | 0.785218 | 53 / 21 / 48 / 131 |
+
+Saved predictions and full-precision metrics are in `verification/`. These evaluations were independently reproduced from the supplied matrices on 10 November 2026. They are not claims that every other analysis in the manuscript was rerun.
+
+## 5. Notebooks
+
+- `../Scavenpred.ipynb` — original, historical development notebook. It is **not** the corrected feature-selection implementation.
+- `notebooks/ScavenPred_complete_training_and_analysis.ipynb` and `notebooks/ACE_iPred_complete_training_and_analysis.ipynb` — archived analysis and research-result notebooks, with outputs removed.
+- `notebooks/ScavenPred_frozen_reproduction.ipynb` and `notebooks/ACE_iPred_frozen_reproduction.ipynb` — concise frozen model-fitting notebooks.
+
+For code-level reproduction, prefer the scripts in `scripts/`.
+
+## 6. Public tools and protected research
+
+ScavenPred: https://pepsilico.com/tools/scavenpred/
+
+ACE-iPred: https://pepsilico.com/tools/ace-ipred/
+
+**SAPIEN-Pep / SIPPAD are distinct pre-publication research systems and no proprietary code or engine archives are included here.**
+
+## 7. Scope and limitations
+
+The archived data are curated research datasets and include putative negatives, not exclusively experimentally verified inactive peptides. There is no claim that independent predictions are experimental measurements. The reproducibility archive exposes features and labels; it does not provide independent evidence that every source descriptor value can be rederived from the original peptide databases. Please cite the associated manuscript when its final bibliographic details are available.
