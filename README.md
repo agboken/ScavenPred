@@ -12,7 +12,7 @@ The web interface accepts standard amino-acid sequences, including batch input, 
 
 This is the public ScavenPred research repository referenced in the ScavenPred/ACE-iPred manuscript. The public predictor is served by PepSilico; the web interface and this repository have different purposes.
 
-For methodological reproducibility, use the notebooks, datasets and evaluation materials supplied with the corresponding research release. Web predictions alone do not reproduce cross-validation, feature-selection or model-training results.
+See the [public reproducibility code and current availability status](reproducibility/README.md). The analysis notebooks are now public; the full binary datasets and corrected feature-selection implementation have not yet been completely published or independently rerun. Web predictions alone do not reproduce the manuscript's cross-validation, feature-selection or training results.
 
 ## Companion model
 
