@@ -97,3 +97,19 @@ The previously published `reproduce_selection.py` screens the entire training da
 **Important:** [The original notebook and archive chronology audit](verification/2026-11-10_historical_holdout_provenance_audit.md) found exploratory test-label evaluations and multiple alternative feature subsets in the historical ScavenPred development notebook. The records do **not** establish that the final independent test was never accessed or consulted during the original development process. This does not by itself prove that test results determined the final model; nevertheless, the old holdout cannot be certified as prospectively untouched. The [cell-level evidence inventory](verification/2026-11-10_original_notebook_cell_inventory.csv) records the specific notebook locations and hashes.
 
 The new nested cross-validation remains valid as a separate corrected assessment. Archived external-test results should be described as *legacy external evaluations* unless a contemporaneous, independently verified test-sealing history is available. Do not claim the historical test was never consulted on the basis of the current repository.
+
+## Primary corrected evaluation: sequence-group-disjoint nested CV (10 November 2026)
+
+The fully verified **primary leakage-controlled evaluation** is [strict_group_nested_validation.py](scripts/strict_group_nested_validation.py), with [complete metrics and fold results](verification/2026-11-10_final_group_disjoint_nested_cv.md). Unlike the superseded historical wrapper, the feature selector is inside the inner-CV `Pipeline`; model tuning and fitting are also restricted to the corresponding inner training folds. Related peptides (>=80% same-length identity, or full-sequence substring relations of length >=5) are placed in the same group across outer and inner splits.
+
+| Model | N | Out-of-fold accuracy | MCC | ROC-AUC | PR-AUC |
+|---|---:|---:|---:|---:|---:|
+| ScavenPred | 1,648 | 70.33% | 0.403 | 0.782 | 0.774 |
+| ACE-iPred | 1,933 | 75.06% | 0.498 | 0.819 | 0.820 |
+
+```bash
+python reproducibility/scripts/unpack_data.py
+python reproducibility/scripts/strict_group_nested_validation.py --data reproducibility/data/csv --out group_nested_results --model both
+```
+
+All 3,581 out-of-fold predictions were audited for unique membership and numerical consistency; all outer held-out sequence groups were disjoint from their corresponding training partitions. Independent-test files are not loaded. **Use these new nested evaluation results for the corrected methodology**, rather than claiming the old exploratory notebook was free from leakage. The public web service continues to use the previously deployed frozen model.
