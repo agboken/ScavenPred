@@ -28,7 +28,9 @@ The public `data/` folder contains:
 - `ScavenPred_ACEiPred_dataset_bundle.tar.gz.b64` — compressed CSV archive (SHA-256: `5361826554c55de3f0f05b725f6c86eaa0d1c701a985728b28366fc12d6fb6bc`).
 - `scavenpred_test_256_features.csv.gz.b64` — full independent-test descriptor matrix, packaged separately.
 
-The restoration script verifies the archived checksum, decodes the compressed files and exports 16 normal CSV files to `reproducibility/data/restored/`. The public archive includes finalized training matrices and labels, test labels, ScavenPred screening / correlation / VIF / wrapper / hyperparameter results, and saved independent-test predictions.
+The restoration script verifies the archived checksum, decodes the compressed files and exports 16 normal CSV files to `reproducibility/data/restored/`.
+
+The dataset bundle is additionally mirrored as **23 independently accessible parts** under [`data/archive_parts/`](data/archive_parts/). To reconstruct these with the separate checksum-verifying alternative, run `python reproducibility/scripts/unpack_data.py` (outputs to `reproducibility/data/csv/`). The ScavenPred independent-test descriptor matrix is also a directly readable CSV at [`data/scavenpred_test_88.csv`](data/scavenpred_test_88.csv). The public archive includes finalized training matrices and labels, test labels, ScavenPred screening / correlation / VIF / wrapper / hyperparameter results, and saved independent-test predictions.
 
 No data are downloaded from the private PepSilico repository. The frozen evaluation scripts use the research datasets supplied here.
 
@@ -54,7 +56,7 @@ For a strictly fold-contained *alternative* feature-selection assessment, `scrip
 | ScavenPred (1,000 trees, depth 7) | 1,648 | 256 | 0.765625 | 0.377006 | 0.823609 | 33 / 22 / 38 / 163 |
 | ACE-iPred (200 trees, depth 10, leaf 4, balanced) | 1,933 | 253 | 0.727273 | 0.416194 | 0.785218 | 53 / 21 / 48 / 131 |
 
-Saved predictions and full-precision metrics are in `verification/`. These evaluations were independently reproduced from the supplied matrices on 10 November 2026. They are not claims that every other analysis in the manuscript was rerun.
+Saved predictions and full-precision metrics are in `verification/`, including [`2026-11-10_independent_test_rerun.json`](verification/2026-11-10_independent_test_rerun.json). These evaluations were independently reproduced from the supplied matrices on 10 November 2026. They are not claims that every other analysis in the manuscript was rerun.
 
 ## 5. Notebooks
 
