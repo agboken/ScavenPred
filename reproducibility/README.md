@@ -91,3 +91,9 @@ python reproducibility/scripts/nested_feature_selection_cv.py --data reproducibi
 ```
 
 The previously published `reproduce_selection.py` screens the entire training dataset before scoring its five-fold wrapper. **Its wrapper scores must not be interpreted as leakage-free cross-validated generalization estimates.** It is retained for historical transparency. The newer nested evaluation addresses this within-training issue prospectively, but does not establish that the historical independent test was never consulted during model development. The independent test remains untouched in nested CV.
+
+## Historical independent-test provenance review (10 November 2026)
+
+**Important:** [The original notebook and archive chronology audit](verification/2026-11-10_historical_holdout_provenance_audit.md) found exploratory test-label evaluations and multiple alternative feature subsets in the historical ScavenPred development notebook. The records do **not** establish that the final independent test was never accessed or consulted during the original development process. This does not by itself prove that test results determined the final model; nevertheless, the old holdout cannot be certified as prospectively untouched. The [cell-level evidence inventory](verification/2026-11-10_original_notebook_cell_inventory.csv) records the specific notebook locations and hashes.
+
+The new nested cross-validation remains valid as a separate corrected assessment. Archived external-test results should be described as *legacy external evaluations* unless a contemporaneous, independently verified test-sealing history is available. Do not claim the historical test was never consulted on the basis of the current repository.
