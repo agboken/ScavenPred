@@ -77,3 +77,17 @@ ACE-iPred: https://pepsilico.com/tools/ace-ipred/
 ## 7. Scope and limitations
 
 The archived data are curated research datasets and include putative negatives, not exclusively experimentally verified inactive peptides. There is no claim that independent predictions are experimental measurements. The reproducibility archive exposes features and labels; it does not provide independent evidence that every source descriptor value can be rederived from the original peptide databases. Please cite the associated manuscript when its final bibliographic details are available.
+
+
+## Corrected nested cross-validation audit (November 2026)
+
+The executable [nested_feature_selection_cv.py](scripts/nested_feature_selection_cv.py) reruns Welch univariate screening, class-guided Pearson redundancy removal, VIF filtering, inner three-fold forward-selection and RF fitting **from scratch within each outer training fold**. The outer five held-out partitions are not available to these steps. The script uses the published training feature matrices and does not load the independent-test set.
+
+To rerun after restoring datasets:
+
+```bash
+python reproducibility/scripts/nested_feature_selection_cv.py --data reproducibility/data/restored --out nested_results --model scavenpred --max-features 5 --candidate-limit 12 --trees 40
+python reproducibility/scripts/nested_feature_selection_cv.py --data reproducibility/data/restored --out nested_results --model ace-ipred --max-features 10 --candidate-limit 12 --trees 40
+```
+
+The previously published `reproduce_selection.py` screens the entire training dataset before scoring its five-fold wrapper. **Its wrapper scores must not be interpreted as leakage-free cross-validated generalization estimates.** It is retained for historical transparency. The newer nested evaluation addresses this within-training issue prospectively, but does not establish that the historical independent test was never consulted during model development. The independent test remains untouched in nested CV.
