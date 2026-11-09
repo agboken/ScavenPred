@@ -1,5 +1,8 @@
 # ScavenPred / ACE-iPred — Public reproducibility release
 
+> **CURRENT RESULTS (10 November 2026):** Use the [reconciled results index](verification/RESULTS_RECONCILIATION.md) for the authoritative corrected evaluation. **Grouped nested CV**: ScavenPred 70.33% (n=1,648), ACE-iPred 75.06% (n=1,933). **Similarity-screened external evaluation**: ScavenPred 81.20% (n=250), ACE-iPred 75.00% (n=248). Older frozen-model and preliminary nested-CV values below are retained only for reproducibility history and must not be mixed with these final protocols.
+
+
 **Status (10 November 2026):** Research datasets, corrected training-only ScavenPred feature-selection code, frozen Random Forest reproduction code, model configurations, independent-test prediction outputs and verification records are publicly available here.
 
 ## 1. Reproduce from a fresh clone
