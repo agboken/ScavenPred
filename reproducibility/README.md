@@ -113,3 +113,19 @@ python reproducibility/scripts/strict_group_nested_validation.py --data reproduc
 ```
 
 All 3,581 out-of-fold predictions were audited for unique membership and numerical consistency; all outer held-out sequence groups were disjoint from their corresponding training partitions. Independent-test files are not loaded. **Use these new nested evaluation results for the corrected methodology**, rather than claiming the old exploratory notebook was free from leakage. The public web service continues to use the previously deployed frozen model.
+
+## Final corrected external evaluation — 10 November 2026
+
+The [full reproducible external-test script](scripts/reproduce_external_similarity_screened.py) selects model features/hyperparameters exclusively by cross-validation on the training data, then excludes closely related training analogues from the external test by sequence alone before applying the frozen selected estimator. The [independently checked results](verification/2026-11-10_final_external_similarity_screened.md) are:
+
+| Model | Screened external n | Accuracy | MCC | ROC-AUC | PR-AUC |
+|---|---:|---:|---:|---:|---:|
+| ScavenPred | 250 | 81.20% | 0.526 | 0.860 | 0.955 |
+| ACE-iPred | 248 | 75.00% | 0.461 | 0.843 | 0.929 |
+
+The missing ACE-iPred test descriptor Z5 is reconstructed from the **training sequences and training descriptor values only**, with maximum training residual < 4e-15. No external labels are used for model selection, training, or descriptor recovery.
+
+```bash
+python reproducibility/scripts/unpack_data.py
+python reproducibility/scripts/reproduce_external_similarity_screened.py --data reproducibility/data/csv --scavenpred-test reproducibility/data/scavenpred_test_88.csv --out external_results
+```
